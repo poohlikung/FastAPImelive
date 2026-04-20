@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from typing import Union
 
 
@@ -16,9 +16,13 @@ def hello_world():
 def read_item(item_id: int,q: Union[str,None] = None):
     return {"item_id": item_id,"q":q}
 
-# Post
+
+# Post # Async
 @app.post("/items")
-def post_item():
-    return
+async def create_item(request : Request):
+    body = await request.json()
+    # debug
+    print(f'username : {body["name"]}')
+    return {"body" : body}
 
 
