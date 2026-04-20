@@ -1,5 +1,7 @@
 from fastapi import FastAPI, Request
 from typing import Union
+from pydantic import BaseModel
+
 
 
 
@@ -18,11 +20,30 @@ def read_item(item_id: int,q: Union[str,None] = None):
 
 
 # Post # Async
+# ส่งอะไรมาก็ได้
+'''
 @app.post("/items")
 async def create_item(request : Request):
     body = await request.json()
     # debug
     print(f'username : {body["name"]}')
     return {"body" : body}
+'''
 
 
+# Pydantic
+# ต้องใช้ท่านี้เสมอในการpost
+# type checking 
+# มี docs สอนถ้าใช้ท่านี้
+class Item(BaseModel):
+    name: str
+    description:str
+    price: float
+
+@app.post("/items")
+def create_item(item : Item):
+    print(item.name)
+    return {"body" : item}
+
+
+# put
