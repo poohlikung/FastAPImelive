@@ -37,7 +37,6 @@ async def create_item(request : Request):
 # มี docs สอนถ้าใช้ท่านี้
 class Item(BaseModel):
     name: str
-    description:str
     price: float
 
 @app.post("/items")
@@ -45,5 +44,7 @@ def create_item(item : Item):
     print(item.name)
     return {"body" : item}
 
-
-# put
+# put แก้ไข
+@app.put("/items/{item_id}")
+def edit_item(item_id:int,item: Item):
+    return{"id":item_id,"request body": item}
