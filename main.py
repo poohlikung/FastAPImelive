@@ -1,7 +1,24 @@
 from fastapi import FastAPI
+from typing import Union
+
+
 
 app = FastAPI()
 
-@app.get("/")
+
+#part hello
+@app.get("/hello")
 def hello_world():
-    return {"message" : "hello world"}
+    return {"message" : "hello world hee"}
+
+# Union query String
+@app.get("/items/{item_id}")
+def read_item(item_id: int,q: Union[str,None] = None):
+    return {"item_id": item_id,"q":q}
+
+# Post
+@app.post("/items")
+def post_item():
+    return
+
+
