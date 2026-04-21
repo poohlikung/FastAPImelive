@@ -41,6 +41,19 @@ class Item(BaseModel):
     title:str
     description:str
     price:float
-
+# request
 class ItemCreate(Item):
     pass
+# response
+class ItemResponse(Item):
+    id : int
+    class Config:
+        from_attributes = True
+
+# Dependency
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
