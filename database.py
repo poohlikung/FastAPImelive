@@ -68,3 +68,9 @@ def create_item(item:ItemCreate,db: Session= Depends(get_db)):
     db.commit()
     db.refresh(db_item)
     return db_item
+
+# get item
+@app.get("/items/{item_id}",response_model=ItemResponse)
+def read_item(item_id:int,db: Session= Depends(get_db)):
+    db_item = db.query(Item).filter(Item.id == item_id).first()
+    return db_item
