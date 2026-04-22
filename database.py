@@ -1,12 +1,10 @@
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request,Depends
 from typing import Union
 from pydantic import BaseModel
 # SQL Alchemy
 from sqlalchemy import create_engine, Column,Integer,String
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker
-
-
+from sqlalchemy.orm import sessionmaker,Session
 
 
 # create sql engine
@@ -21,8 +19,10 @@ SessionLocal = sessionmaker(autocommit=False,autoflush=False,bind=engine)
 Base = declarative_base()
 
 
-# ORM Class
+# ORM Class 
+# ส่ง payload ว่าจะทำอะไรก็ได้เกี่ยวกับตารางนี้ ต้องกำหนดตรงนี้ออกมาก่อน
 class Item(Base):
+    # กำหนดตารางที่ต้องการส่ง
     __tablename__ = "items"
 
     id = Column(Integer, primary_key=True)
@@ -30,22 +30,24 @@ class Item(Base):
     description = Column(String, index=True)
     price = Column(Integer)
 
-# สร้างฐานข้อมูล
+# สร้างฐานข้อมูล (การซิ้งสกีม่า)
 Base.metadata.create_all(bind=engine)
 
 
 app = FastAPI()
 
-# base
-class Item(BaseModel):
+# base การทำ class ในโปรแกรมข้างใน
+class ItemBase(BaseModel):
     title:str
     description:str
     price:float
-# request
-class ItemCreate(Item):
+
+# request ขาเข้า
+class ItemCreate(ItemBase):
     pass
-# response
-class ItemResponse(Item):
+
+# response ขาออก
+class ItemResponse(ItemBase):
     id : int
     class Config:
         from_attributes = True
@@ -57,3 +59,12 @@ def get_db():
         yield db
     finally:
         db.close()
+        
+
+@app.post("/items",response_model=ItemResponse)
+def create_item(item:ItemCreate,db: Session= Depends(get_db)):
+    db_item = Item(**item.model_dump())
+    db.add(db_item)
+    db.commit()
+    db.refresh(db_item)
+    return db_item
