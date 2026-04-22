@@ -1,5 +1,5 @@
-from fastapi import FastAPI, Request,Depends
-from typing import Union
+from fastapi import FastAPI, Request,Depends,HTTPException
+from typing import Union,List
 from pydantic import BaseModel
 # SQL Alchemy
 from sqlalchemy import create_engine, Column,Integer,String
@@ -74,3 +74,33 @@ def create_item(item:ItemCreate,db: Session= Depends(get_db)):
 def read_item(item_id:int,db: Session= Depends(get_db)):
     db_item = db.query(Item).filter(Item.id == item_id).first()
     return db_item
+
+
+# get all item
+@app.get("/items",response_model=List[ItemResponse])
+def read_items(db: Session= Depends(get_db)):
+    db_item = db.query(Item).all()
+    return db_item
+
+
+# put item
+@app.put("/items/{item_id}",response_model=ItemResponse)
+async def update_item(item_id:int,item:ItemCreate,db: Session= Depends(get_db)):
+    db_item = db.query(Item).filter(Item.id == item_id).first()
+    if db_item is None:
+        raise HTTPException(status_code=404,detail="Item not found")
+    for key,value in item.model_dump().items():
+        setattr(db_item,key,value)
+    db.commit()
+    db.refresh(db_item)   
+    return db_item
+
+# delete item
+@app.delete("/items/{item_id}")
+async def delete_item(item_id:int,db: Session= Depends(get_db)):
+    db_item = db.query(Item).filter(Item.id == item_id).first()
+    if db_item is None:
+        raise HTTPException(status_code=404,detail="Item not found")
+    db.delete(db_item)   
+    db.commit()
+    return {"messege" : "item deleted"}
